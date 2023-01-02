@@ -1,0 +1,20 @@
+{
+  "name": "labecommerce-backend",
+  "version": "1.0.0",
+  "description": "labecommerce-backend",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alinekabbas/labecommerce-backend.git"
+  },
+  "author": "Aline Kabbas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alinekabbas/labecommerce-backend/issues"
+  },
+  "homepage": "https://github.com/alinekabbas/labecommerce-backend#readme"
+}
