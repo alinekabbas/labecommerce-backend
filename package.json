@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "description": "labecommerce-backend",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "tsc && node ./build/index.js"
   },
   "repository": {
     "type": "git",
@@ -16,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/alinekabbas/labecommerce-backend/issues"
   },
-  "homepage": "https://github.com/alinekabbas/labecommerce-backend#readme"
+  "homepage": "https://github.com/alinekabbas/labecommerce-backend#readme",
+  "devDependencies": {
+    "typescript": "^4.9.4",
+    "@types/node":"^18.11.18"
+
+  }
 }
