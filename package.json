@@ -4,7 +4,7 @@
   "description": "labecommerce-backend",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node ./build/index.js"
+    "start": "clear && tsc && node ./build/index.js"
   },
   "repository": {
     "type": "git",
