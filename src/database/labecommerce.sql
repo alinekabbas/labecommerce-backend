@@ -111,3 +111,38 @@ SELECT * FROM products ORDER BY price ASC LIMIT 20 OFFSET 0;
 SELECT * FROM products
 WHERE price >= 100 AND price <= 500
 ORDER BY price ASC;
+
+CREATE TABLE purchases(
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL UNIQUE NOT NULL,
+    paid INTEGER NOT NULL,
+    delivered_at TEXT,
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
+
+DROP TABLE purchases;
+
+INSERT INTO purchases(id, total_price, paid, delivered_at, buyer_id)
+VALUES
+    ('b001', 240, 0, NULL,'01'),
+    ('b002', 899, 0, NULL,'01'),
+    ('b003', 400, 0, NULL,'02'),
+    ('b004', 3489, 0, NULL,'02');
+
+SELECT * FROM purchases;
+
+UPDATE purchases 
+SET delivered_at = DATETIME ('NOW')
+WHERE buyer_id = '01';
+
+UPDATE purchases 
+SET delivered_at = DATETIME ('NOW')
+WHERE buyer_id = '02';
+
+SELECT * FROM purchases
+INNER JOIN users
+ON purchases.buyer_id = users.id
+WHERE buyer_id = '01'
+
+    
