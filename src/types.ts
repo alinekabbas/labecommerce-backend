@@ -1,11 +1,14 @@
 export enum CATEGORIES {
     ELETROPORTATEIS = 'eletroportáteis',
     ELETRONICOS = 'eletrônicos',
-    MOVEIS = 'móveis'
-}
+    ELETRODOMESTICOS = 'eletrodomésticos',
+    MOVEIS = 'móveis',
+    VENTILACAO = "ventilação"
+ }
 
 export type TUser = {
     id: string,
+    name: string,
     email: string,
     password: string
 }
@@ -14,6 +17,7 @@ export type TProduct = {
     id: string,
     name: string,
     price: number,
+    description: string,
     category: CATEGORIES
 }
 
