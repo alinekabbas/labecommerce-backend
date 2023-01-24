@@ -17,7 +17,7 @@ VALUES
 ;
 
 -- Get All Users
-SELECT *FROM users;
+SELECT * FROM users;
 
 -- Create User
 INSERT INTO users(id, name, email, password)
@@ -39,17 +39,20 @@ CREATE TABLE products (
     name TEXT NOT NULL,
     price REAL NOT NULL,
     description TEXT NOT NULL,
-    category TEXT NOT NULL
+    category TEXT NOT NULL,
+    image_url TEXT NOT NULL
 );
 
+DROP TABLE products;
+
 INSERT INTO
-    products (id, name, price, description, category)
+    products (id, name, price, description, category, image_url)
 VALUES 
-    ('p01', 'ventilador', 120, 'Ventilador 127V', 'eletroportáteis'), 
-    ('p02', 'mesa', 400, 'Mesa de escritório branca', 'móveis'), 
-    ('p03', 'televisão', 899, 'TV 32" Smart', 'eletrônicos'), 
-    ('p04', 'cadeira', 359, 'Cadeira para escritório', 'móveis'), 
-    ('p05', 'geladeira', 3489, 'Geladeira 420L Branca', 'eletrodomésticos')
+    ('p01', 'ventilador', 120, 'Ventilador 127V', 'eletroportáteis', 'https://picsum.photos/200'), 
+    ('p02', 'mesa', 400, 'Mesa de escritório branca', 'móveis', 'https://picsum.photos/200'), 
+    ('p03', 'televisão', 899, 'TV 32" Smart', 'eletrônicos', 'https://picsum.photos/200'), 
+    ('p04', 'cadeira', 359, 'Cadeira para escritório', 'móveis', 'https://picsum.photos/200'), 
+    ('p05', 'geladeira', 3489, 'Geladeira 420L Branca', 'eletrodomésticos', 'https://picsum.photos/200')
 ;
 
 -- Get All Products
@@ -71,8 +74,8 @@ ORDER BY price ASC;
 SELECT * FROM products WHERE name = "ventilador";
 
 -- Create Product
-INSERT INTO products(id, name, price, description, category)
-VALUES ('p06', 'ar-condicionado', 1459.99, 'Ar-condicionado Split 12.000 BTUs', 'ar & ventilação');
+INSERT INTO products(id, name, price, description, category, image_url)
+VALUES ('p06', 'ar-condicionado', 1459.99, 'Ar-condicionado Split 12.000 BTUs', 'ventilação', 'https://picsum.photos/200'); 
 
 -- Get Products by id
 SELECT * FROM products WHERE id = 'p01';
@@ -86,22 +89,27 @@ UPDATE products SET price = 129.99 WHERE id = 'p01';
 -- Purchases ----------------------------------------------------------
 CREATE TABLE purchases(
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
-    total_price REAL UNIQUE NOT NULL,
-    paid INTEGER NOT NULL,
-    delivered_at TEXT,
     buyer_id TEXT NOT NULL,
+    total_price REAL NOT NULL,
+    created_at TEXT DEFAULT (DATETIME()) NOT NULL,
+    paid INTEGER NOT NULL,
     FOREIGN KEY (buyer_id) REFERENCES users(id)
 );
 
-INSERT INTO purchases(id, total_price, paid, buyer_id)
+DROP TABLE purchases;
+
+INSERT INTO purchases(id, buyer_id, total_price, paid)
 VALUES
-    ('b001', 259.80, 0, '01'),
-    ('b002', 899, 0, '01'),
-    ('b003', 400, 0, '02'),
-    ('b004', 3489, 0, '02')
+    ('b001', '01', 259.80, 0),
+    ('b002', '01', 899, 0),
+    ('b003', '02', 400, 0),
+    ('b004', '02', 3489, 0)
 ;
 
 SELECT * FROM purchases;
+
+SELECT * FROM purchases
+WHERE buyer_id = '01';
 
 UPDATE purchases 
 SET delivered_at = DATETIME ('NOW')
@@ -114,7 +122,7 @@ WHERE buyer_id = '02';
 SELECT * FROM purchases
 INNER JOIN users
 ON purchases.buyer_id = users.id
-WHERE buyer_id = '01';
+WHERE buyer_id = '02';
 
 -- purchase_products ----------------------------------------------
 CREATE TABLE purchases_products(

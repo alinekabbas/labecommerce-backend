@@ -6,11 +6,13 @@ import { CATEGORIES } from "./types"
 export const users: TUser[] = [
     {
         id: "01",
+        name: "Fulano",
         email: 'fulano@gmail.com',
         password: '123456'
     },
     {
         id: "02",
+        name: "Ciclano",
         email: 'ciclano@gmail.com',
         password: '654321'
     }
@@ -22,12 +24,14 @@ export const products: TProduct[] = [
         id: "201",
         name: "Ventilador",
         price: 120,
+        description: 'Ventilador 127V',
         category: CATEGORIES.ELETROPORTATEIS
     },
     {
         id: "426",
         name: "Mesa",
         price: 480,
+        description: 'Mesa de escritório branca',
         category: CATEGORIES.MOVEIS
     }
 
@@ -49,9 +53,10 @@ export const purchases: TPurchase[] = [
 
 ]
 
-export function createUser(id: string, email: string, password: string): void {
+export function createUser(id: string, name: string, email: string, password: string): void {
     const newUser: TUser = {
         id: id,
+        name: name,
         email: email,
         password: password
     }
@@ -63,11 +68,12 @@ export function getAllUsers():TUser[] {
     return users
 }
 
-export function createProduct(id: string, name: string, price: number, category: CATEGORIES):void {
+export function createProduct(id: string, name: string, price: number, description: string, category: CATEGORIES):void {
     const newProduct: TProduct = {
         id: id,
         name: name,
         price: price,
+        description: description,
         category: category
     }
     products.push(newProduct)
