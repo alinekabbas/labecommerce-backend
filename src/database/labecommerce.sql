@@ -124,6 +124,19 @@ INNER JOIN users
 ON purchases.buyer_id = users.id
 WHERE buyer_id = '02';
 
+SELECT 
+    purchases.id AS purchaseId,
+    purchases.total_price AS totalPrice,
+    purchases.created_at AS createdAt,
+    purchases.paid AS isPaid,
+    users.id AS buyerId,
+    users.email AS email,
+    users.name AS name
+FROM purchases
+INNER JOIN users
+ON purchases.buyer_id = users.id
+WHERE purchases.id = 'b002';
+
 -- purchase_products ----------------------------------------------
 CREATE TABLE purchases_products(
     purchase_id TEXT NOT NULL,
@@ -154,3 +167,5 @@ INNER JOIN purchases
 ON purchases_products.purchase_id = purchases.id
 INNER JOIN products
 ON purchases_products.product_id = products.id;
+
+
