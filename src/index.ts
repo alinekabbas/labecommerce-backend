@@ -16,7 +16,7 @@ app.get('/ping', (req: Request, res: Response) => {
     res.send('Pong!')
 })
 
-//Get All Users - REFATORADO p/ query builder
+//Get All Users
 app.get("/users", async (req: Request, res: Response) => {
     try {
         const result = await db("users") as string
@@ -29,6 +29,78 @@ app.get("/users", async (req: Request, res: Response) => {
         if (res.statusCode === 200) {
             res.status(500)
         }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+//Create User
+app.post("/users", async (req: Request, res: Response) => {
+    try {
+        const { id, name, email, password } = req.body
+
+        if(typeof id !== "string"){
+            res.status(400)
+            throw new Error("'id' deve ser string");
+        }
+
+        if(id.length < 2){
+            res.status(400)
+            throw new Error("'id' deve possuir pelo menos 2 caracteres");
+        }
+
+        if(typeof name !== "string"){
+            res.status(400)
+            throw new Error("'name' deve ser string");
+        }
+
+        if(name.length < 4){
+            res.status(400)
+            throw new Error("'name' deve possuir pelo menos 4 caracteres");
+        }
+
+        if(typeof email !== "string"){
+            res.status(400)
+            throw new Error("'email' deve ser string");
+        }
+
+        if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g)) {
+			throw new Error("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
+		}
+
+        const [user]: TUser[] | undefined[] = await db("users")
+            .where({id: id})
+            .orWhere({email: email})
+
+        if(user){
+            res.status(400)
+            throw new Error("'id' ou 'email' já existente no cadastro");
+            
+        } 
+        
+        const newUser: TUser = {
+            id,
+            name,
+            email,
+            password
+        }
+        await db("users").insert(newUser)
+        
+        res.status(201).send({
+            message: "Cadastro realizado com sucesso",
+            user: newUser
+        })
+
+    } catch (error: any) {
+        console.log(error)
+
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+
         if (error instanceof Error) {
             res.send(error.message)
         } else {
@@ -91,59 +163,7 @@ app.get("/product/search", async (req: Request, res: Response) => {
     }
 })
 
-//Create User - REFATORADO c/ query builder
-app.post("/users", async (req: Request, res: Response) => {
-    try {
-        const { id, name, email, password } = req.body as TUser
 
-        if (
-            typeof id !== 'string' ||
-            typeof id !== 'string' ||
-            typeof id !== 'string' ||
-            typeof id !== 'string') {
-            res.status(400)
-            throw new Error("O dado inserido deve ser uma string");
-        }
-
-        if(id.length < 1 || name.length < 1 || email.length < 1 || password.length <1){
-            res.status(400)
-            throw new Error("Dados inválidos, precisam ter no mínimo 1 caracter.");
-        }
-
-        const [user] = await db("users")
-            .where({id: id})
-            .orWhere({email: email})
-
-        if(user){
-            res.status(400)
-            throw new Error("'id' ou 'email' já existente no cadastro");
-            
-        } else{
-            const newUser = {
-                id,
-                name,
-                email,
-                password
-            }
-            await db("users").insert(newUser)
-        }
-
-        res.status(201).send("Cadastro realizado com sucesso")
-
-    } catch (error: any) {
-        console.log(error)
-
-        if (req.statusCode === 200) {
-            res.status(500)
-        }
-
-        if (error instanceof Error) {
-            res.send(error.message)
-        } else {
-            res.send("Erro inesperado")
-        }
-    }
-})
 
 //Create Product - REFATORADO c/ query builder
 app.post("/products", async (req: Request, res: Response) => {
@@ -439,12 +459,12 @@ app.put("/product/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const newId = req.body.id as string | undefined
-        const newName = req.body.name as string | undefined
-        const newPrice = req.body.price as number | undefined
-        const newDescription = req.body.description as string | undefined
-        const newCategory = req.body.category as CATEGORIES | undefined
-        const newImage = req.body.image_url as string | undefined
+        const newId = req.body.id 
+        const newName = req.body.name 
+        const newPrice = req.body.price 
+        const newDescription = req.body.description 
+        const newCategory = req.body.category 
+        const newImage = req.body.image_url 
 
         if (newId !== undefined) {
             if (typeof newId !== 'string') {
