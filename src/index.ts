@@ -1,4 +1,4 @@
-import { CATEGORIES, TProduct, TPurchase, TUser } from "./types";
+import { TProduct, TPurchase, TUser } from "./types";
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
@@ -16,7 +16,7 @@ app.get('/ping', (req: Request, res: Response) => {
     res.send('Pong!')
 })
 
-//Get All Users
+//Get All Users - ok
 app.get("/users", async (req: Request, res: Response) => {
     try {
         const result = await db("users") as string
@@ -37,7 +37,7 @@ app.get("/users", async (req: Request, res: Response) => {
     }
 })
 
-//Create User
+//Create User - ok
 app.post("/users", async (req: Request, res: Response) => {
     try {
         const { id, name, email, password } = req.body
@@ -66,6 +66,10 @@ app.post("/users", async (req: Request, res: Response) => {
             res.status(400)
             throw new Error("'email' deve ser string");
         }
+
+        if (!email.match(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/)) {
+            throw new Error("O email deve ter o formato 'exemplo@exemplo.com'.")
+       }
 
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g)) {
 			throw new Error("'password' deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
@@ -109,8 +113,67 @@ app.post("/users", async (req: Request, res: Response) => {
     }
 })
 
-//Get All Products - REFATORADO p/ query builder
-app.get('/products', async (req: Request, res: Response) => {
+//Create Product - ok
+app.post("/products", async (req: Request, res: Response) => {
+    try {
+        const { id, name, price, description, image_url} = req.body
+
+        if (
+            typeof id !== 'string' || 
+            typeof name !== 'string' ||
+            typeof description !== 'string' ||
+            typeof image_url !== 'string') {
+            res.status(400)
+            throw new Error("O dado inserido deve ser uma string");
+        }
+
+        if (typeof price !== 'number') {
+            res.status(400)
+            throw new Error("'price' deve ser um número");
+        }
+
+        if(
+            id.length < 1 || 
+            name.length < 1 || 
+            description.length <1 || 
+            image_url.length < 1){
+            res.status(400)
+            throw new Error("Dados inválidos, precisam ter no mínimo 1 caracter.");
+        }
+
+        const [product] = await db("products").where({id: id})
+
+        if (product) {
+            res.status(400)
+            throw new Error("'id' já existente no cadastro")
+        } 
+            
+        const newProduct: TProduct = {
+            id,
+            name,
+            price,
+            description,
+            image_url
+        }
+        await db("products").insert(newProduct)
+       
+        res.status(201).send({
+            message: "Produto cadastrado com sucesso",
+            newProduct: newProduct
+        })
+
+    } catch (error: any) {
+        console.log(error)
+
+        if (res.statusCode === 200) {
+            res.status(500)
+        }
+        res.send(error.message)
+    }
+})
+
+//Get All Products funcionalidade 1 - ok
+app.get("/products", async (req: Request, res: Response) => {
     try {
         const result = await db("products") as string
         res.status(200).send(result)
@@ -128,26 +191,19 @@ app.get('/products', async (req: Request, res: Response) => {
     }
 })
 
-//Search Product by name - REFATORADO p/ query builder
+//Get All Products funcionalidade 2 - ok
 app.get("/product/search", async (req: Request, res: Response) => {
     try {
-        const name = req.query.name as string
+        const searchProduct = req.query.q as string
 
-        const [result] = await db("products").where("name", "LIKE", `%${name}%`)
-        
-        if(!result){
-        res.status(400)
-        throw new Error("Produto inexistente");
+        if(searchProduct === undefined){
+            const result = await db("products")
+            res.status(200).send(result)
+        } else {
+            const result = await db("products")
+                .where("name", "LIKE", `%${searchProduct}%`)
+            res.status(200).send(result)
         }
-
-        if (name !== undefined) {
-            if (name.length < 1) {
-                res.status(400)
-                throw new Error("O nome do produto deve ser possuir no mínimo 1 caractere.");
-            }
-        }
-
-        res.status(200).send(result)
 
     } catch (error: any) {
         console.log(error)
@@ -163,105 +219,64 @@ app.get("/product/search", async (req: Request, res: Response) => {
     }
 })
 
-
-
-//Create Product - REFATORADO c/ query builder
-app.post("/products", async (req: Request, res: Response) => {
+//Edit Product by id - ok
+app.put("/product/:id", async (req: Request, res: Response) => {
     try {
-        const { id, name, price, description, category, image_url} = req.body as TProduct
+        const id = req.params.id
 
-        if (
-            typeof id !== 'string' || 
-            typeof name !== 'string' ||
-            typeof description !== 'string' ||
-            typeof category !== 'string'||
-            typeof image_url !== 'string') {
-            res.status(400)
-            throw new Error("O dado inserido deve ser uma string");
-        }
+        const newId = req.body.id 
+        const newName = req.body.name 
+        const newPrice = req.body.price 
+        const newDescription = req.body.description 
+        const newImage = req.body.image_url 
 
-        if (typeof price !== 'number') {
-            res.status(400)
-            throw new Error("'price' deve ser um número");
-        }
-        if (
-            category !== CATEGORIES.ELETRONICOS &&
-            category !== CATEGORIES.ELETROPORTATEIS &&
-            category !== CATEGORIES.MOVEIS &&
-            category !== CATEGORIES.ELETRODOMESTICOS &&
-            category !== CATEGORIES.VENTILACAO
-        ) {
-            res.status(400)
-            throw new Error("'category' deve ser uma categoria válida: Eletrônicos, Eletroportáteis, Eletrodomésticos, Móveis ou Ventilação")
-        }
-
-        if(
-            id.length < 1 || 
-            name.length < 1 || 
-            description.length <1 || 
-            category.length < 1||
-            image_url.length < 1){
-            res.status(400)
-            throw new Error("Dados inválidos, precisam ter no mínimo 1 caracter.");
-        }
-
-        const [product] = await db("products").where({id: id})
-
-        if (product) {
-            res.status(400)
-            throw new Error("'id' já existente no cadastro")
-        } else {
-            const newProduct = {
-                id,
-                name,
-                price,
-                description,
-                category,
-                image_url
+        if (newId !== undefined) {
+            if (typeof newId !== 'string') {
+                res.status(400)
+                throw new Error("'id' deve ser uma string");
             }
-            await db("products").insert(newProduct)
         }
 
-        res.status(201).send("Produto cadastrado com sucesso")
-
-    } catch (error: any) {
-        console.log(error)
-
-        if (res.statusCode === 200) {
-            res.status(500)
+        if (newName !== undefined) {
+            if (typeof newName !== 'string') {
+                res.status(400)
+                throw new Error("'name' deve ser uma string");
+            }
         }
-        res.send(error.message)
-    }
-})
 
-//Create Purchase - INCOMPLETO, falta validação do total_price.
-app.post("/purchases", async (req: Request, res: Response) => {
-    try {
-        const { id, buyer_id, total_price } = req.body
+        if (newPrice !== undefined) {
+            if (typeof newPrice !== 'number') {
+                res.status(400)
+                throw new Error("'price' deve ser uma string");
+            }
+        }
 
-        if (
-            typeof id !== "string" ||
-            typeof buyer_id !== "string") {
-            res.status(400)
-            throw new Error("O dado inserido deve ser uma string")
+        if (newDescription !== undefined) {
+            if (typeof newDescription !== 'string') {
+                res.status(400)
+                throw new Error("'description' deve ser uma string");
+            }
         }
         
-        const [userId] = await db("users").where({id: buyer_id})
+        const [product] = await db("products").where({id:id})
 
-        if (!userId) {
-            res.status(400)
-            throw new Error("Usuário não cadastrado, 'id' não encontrada")  
+        if (!product) {
+            res.status(404)
+            throw new Error("Produto não cadastrado")
         } 
 
-        const newPurchase ={
-            id,
-            buyer_id,
-            total_price
-        }
-        await db("purchases").update(newPurchase).where({id})
-        res.status(201).send({
-            message: "Compra realizada com sucesso",
-            purchase: newPurchase
+        const updateProduct: TProduct = {
+                id: newId || product.id,
+                name: newName || product.name,
+                price: isNaN(newPrice) ? product.price : newPrice,
+                description: newDescription || product.description,
+                image_url: newImage || product.image_url
+            }
+            await db("products").update(updateProduct).where({id:id})
+
+        res.status(200).send({
+            message: "Produto atualizado com sucesso",
+            product: updateProduct
         })
 
     } catch (error: any) {
@@ -272,58 +287,53 @@ app.post("/purchases", async (req: Request, res: Response) => {
         }
         res.send(error.message)
     }
-})
 
-//Get Products by id - REFATORADO c/ query builder
-app.get("/products/:id", async (req: Request, res: Response) => {
+})  
+
+//Create Purchase - INCOMPLETO, falta validação do total_price.
+app.post("/purchases", async (req: Request, res: Response) => {
     try {
-        const id = req.params.id
+        const { id, buyer, productId, quantity } = req.body
 
-        const [result] = await db("products").where({id: id})
+        const [products] = await db("products").where({id: productId})
 
-        if (!result) {
+        if(!id || !buyer || !productId){
             res.status(400)
-            throw new Error("O produto não existe")
+            throw new Error("Adicione 'id' ou 'buyer_id'")
         }
-        res.status(200).send(result)
 
-    } catch (error: any) {
-        console.log(error)
-
-        if (res.statusCode === 200) {
-            res.status(500)
+        if (
+            typeof id !== "string" &&
+            typeof buyer !== "string") {
+            res.status(400)
+            throw new Error("O dado inserido deve ser uma string")
         }
-        res.send(error.message)
-    }
-
-})
-
-//Get User Purchases by User id - REFATORADO c/ query builder
-app.get("/users/:id/purchases", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id
-
-        const [idUser] = await db("users").where({id: id})
         
-        if (!idUser) {
-            res.status(400)
-            throw new Error("Usuário não cadastrado")
+        const newPurchase ={
+            id,
+            buyer,
+            total_price: products.price * quantity
         }
 
-        const [result] = await db("purchases").select(
-          "*"  
-        ).innerJoin(
-            "users",
-            "purchases.buyer_id",
-            "=",
-            "users.id"
-        ).where({"users.id": id})
-
-        if (!result) {
-            res.status(400)
-            throw new Error("Nenhuma compra cadastrada para este usuário")
+        const newPurchaseProduct ={
+            purchase_id: id,
+            product_id: productId,
+            quantity
         }
-        res.status(200).send(result)
+        const [findUser] = await db("users").where({id: newPurchase.buyer})
+
+        if(findUser){
+            await db("purchases").insert(newPurchase)
+            await db("purchases_products").insert(newPurchaseProduct)
+        } else {
+            res.status(400)
+            throw new Error("Compra não realizada")
+        }
+
+        res.status(201).send({
+            message: "Compra realizada com sucesso",
+            purchase: {newPurchase}  
+        })
 
     } catch (error: any) {
         console.log(error)
@@ -377,155 +387,6 @@ app.delete("/product/:id", async (req: Request, res: Response) => {
 
         res.status(200).send("Produto excluído com sucesso")
         
-    } catch (error: any) {
-        console.log(error)
-
-        if (res.statusCode === 200) {
-            res.status(500)
-        }
-        res.send(error.message)
-    }
-
-})
-
-//Edit User by id - REFATORADO c/ query builder
-app.put("/user/:id", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id
-
-        const newId = req.body.id as string | undefined
-        const newName = req.body.name as string | undefined
-        const newEmail = req.body.email as string | undefined
-        const newPassword = req.body.password as string | undefined
-
-        if (newId !== undefined) {
-            if (typeof newId !== 'string') {
-                res.status(400)
-                throw new Error("'id' deve ser uma string");
-            }
-        }
-
-        if (newName !== undefined) {
-            if (typeof newName !== 'string') {
-                res.status(400)
-                throw new Error("'id' deve ser uma string");
-            }
-        }
-
-        if (newEmail !== undefined) {
-            if (typeof newEmail !== 'string') {
-                res.status(400)
-                throw new Error("'email' deve ser uma string");
-            }
-        }
-
-        if (newPassword !== undefined) {
-            if (typeof newPassword !== 'string') {
-                res.status(400)
-                throw new Error("'password' deve ser uma string");
-            }
-        }
-
-        const [userToEdit] = await db("users").where({id: id})
-
-        if (!userToEdit) {
-            res.status(404)
-            throw new Error("Usuário não cadastrado")
-        } else {
-            const updateUser = {
-                id: newId || userToEdit.id,
-                name: newName || userToEdit.name,
-                email: newEmail || userToEdit.email,
-                password: newPassword || userToEdit.password
-            }
-            await db("users").update(updateUser).where({id: id})
-        }
-
-        res.status(200).send("Atualização realizada com sucesso")
-
-    } catch (error: any) {
-        console.log(error)
-
-        if (res.statusCode === 200) {
-            res.status(500)
-        }
-        res.send(error.message)
-    }
-
-})
-
-//Edit Product by id - REFATORADO c/ query builder
-app.put("/product/:id", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id
-
-        const newId = req.body.id 
-        const newName = req.body.name 
-        const newPrice = req.body.price 
-        const newDescription = req.body.description 
-        const newCategory = req.body.category 
-        const newImage = req.body.image_url 
-
-        if (newId !== undefined) {
-            if (typeof newId !== 'string') {
-                res.status(400)
-                throw new Error("'id' deve ser uma string");
-            }
-        }
-
-        if (newName !== undefined) {
-            if (typeof newName !== 'string') {
-                res.status(400)
-                throw new Error("'name' deve ser uma string");
-            }
-        }
-
-        if (newPrice !== undefined) {
-            if (typeof newPrice !== 'number') {
-                res.status(400)
-                throw new Error("'price' deve ser uma string");
-            }
-        }
-
-        if (newDescription !== undefined) {
-            if (typeof newDescription !== 'string') {
-                res.status(400)
-                throw new Error("'description' deve ser uma string");
-            }
-        }
-
-        if(newCategory !== undefined){
-            if (
-                newCategory !== CATEGORIES.ELETRONICOS &&
-                newCategory !== CATEGORIES.ELETROPORTATEIS &&
-                newCategory !== CATEGORIES.MOVEIS &&
-                newCategory !== CATEGORIES.ELETRODOMESTICOS &&
-                newCategory !== CATEGORIES.VENTILACAO
-            ) {
-                res.status(400)
-                throw new Error("'category' deve ser uma categoria válida: Eletrônicos, Eletroportáteis, Eletrodomésticos, Móveis ou Ventilação")
-            }
-        }
-        
-        const [product] = await db("products").where({id:id})
-
-        if (!product) {
-            res.status(404)
-            throw new Error("Produto não cadastrado")
-        } else {
-            const updateProduct: TProduct = {
-                id: newId || product.id,
-                name: newName || product.name,
-                price: isNaN(newPrice) ? product.price : newPrice,
-                description: newDescription || product.description,
-                category: newCategory || product.category,
-                image_url: newImage || product.image_url
-            }
-            await db("products").update(updateProduct).where({id:id})
-        }
-
-        res.status(200).send("Atualização realizada com sucesso")
-
     } catch (error: any) {
         console.log(error)
 
