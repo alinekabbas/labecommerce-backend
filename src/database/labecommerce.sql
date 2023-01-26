@@ -30,49 +30,30 @@ CREATE TABLE products (
     name TEXT NOT NULL,
     price REAL NOT NULL,
     description TEXT NOT NULL,
-    category TEXT NOT NULL,
     image_url TEXT NOT NULL
 );
 
 DROP TABLE products;
 
 INSERT INTO
-    products (id, name, price, description, category, image_url)
+    products (id, name, price, description, image_url)
 VALUES 
-    ('p01', 'ventilador', 120, 'Ventilador 127V', 'eletroportáteis', 'https://picsum.photos/200'), 
-    ('p02', 'mesa', 400, 'Mesa de escritório branca', 'móveis', 'https://picsum.photos/200'), 
-    ('p03', 'televisão', 899, 'TV 32" Smart', 'eletrônicos', 'https://picsum.photos/200'), 
-    ('p04', 'cadeira', 359, 'Cadeira para escritório', 'móveis', 'https://picsum.photos/200'), 
-    ('p05', 'geladeira', 3489, 'Geladeira 420L Branca', 'eletrodomésticos', 'https://picsum.photos/200')
+    ('p01', 'ventilador', 120, 'Ventilador 127V', 'https://picsum.photos/200'), 
+    ('p02', 'mesa', 400, 'Mesa de escritório branca', 'https://picsum.photos/200'), 
+    ('p03', 'televisão', 899, 'TV 32" Smart', 'https://picsum.photos/200'), 
+    ('p04', 'cadeira', 359, 'Cadeira para escritório', 'https://picsum.photos/200'), 
+    ('p05', 'geladeira', 3489, 'Geladeira 420L Branca', 'https://picsum.photos/200')
 ;
-
--- Get All Products
-SELECT * FROM products;
-
--- Get All Products versão 1 REFATORADO
--- (retorna o resultado ordenado pela coluna price em ordem crescente)
--- (limite o resultado em 20 iniciando pelo primeiro item)
-SELECT * FROM products ORDER BY price ASC LIMIT 20 OFFSET 0;
-
--- Get All Products versão 2 REFATORADO
--- (mocke um intervalo de preços, por exemplo entre 100.00 e 300.00)
--- (retorna os produtos com preços dentro do intervalo mockado em ordem crescente)
-SELECT * FROM products
-WHERE price >= 100 AND price <= 500
-ORDER BY price ASC;
-
--- Search Product by name
-SELECT * FROM products WHERE name = "ventilador";
 
 -- Create Product
 INSERT INTO products(id, name, price, description, category, image_url)
 VALUES ('p06', 'ar-condicionado', 1459.99, 'Ar-condicionado Split 12.000 BTUs', 'ventilação', 'https://picsum.photos/200'); 
 
--- Get Products by id
-SELECT * FROM products WHERE id = 'p01';
+-- Get All Products 1
+SELECT * FROM products;
 
--- Delete Product by id
-DELETE FROM products WHERE id = 'p06';
+-- Get All Products 2
+SELECT * FROM products WHERE name = "ventilador";
 
 -- Edit Product by id
 UPDATE products SET price = 129.99 WHERE id = 'p01';
