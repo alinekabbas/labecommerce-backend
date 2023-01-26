@@ -18,12 +18,13 @@ export type TProduct = {
     name: string,
     price: number,
     description: string,
-    category: CATEGORIES
+    category: CATEGORIES,
+    image_url: string
 }
 
 export type TPurchase = {
-    userId: string,
-    productId: string,
-    quantity: number,
-    totalPrice: number
+    id: string,
+    buyer_id: string,
+    total_price: number,
+    paid: number
 }

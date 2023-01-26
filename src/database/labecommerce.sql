@@ -92,18 +92,18 @@ CREATE TABLE purchases(
     buyer_id TEXT NOT NULL,
     total_price REAL NOT NULL,
     created_at TEXT DEFAULT (DATETIME()) NOT NULL,
-    paid INTEGER NOT NULL,
+    paid INTEGER DEFAULT (0) NOT NULL,
     FOREIGN KEY (buyer_id) REFERENCES users(id)
 );
 
 DROP TABLE purchases;
 
-INSERT INTO purchases(id, buyer_id, total_price, paid)
+INSERT INTO purchases(id, buyer_id, total_price)
 VALUES
-    ('b001', '01', 259.80, 0),
-    ('b002', '01', 899, 0),
-    ('b003', '02', 400, 0),
-    ('b004', '02', 3489, 0)
+    ('b001', '01', 259.80),
+    ('b002', '01', 899),
+    ('b003', '02', 400),
+    ('b004', '02', 3489)
 ;
 
 SELECT * FROM purchases;
@@ -145,6 +145,8 @@ CREATE TABLE purchases_products(
     FOREIGN KEY (purchase_id) REFERENCES purchases(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
+DROP TABLE purchases_products;
 
 INSERT INTO purchases_products(purchase_id, product_id, quantity)
 VALUES

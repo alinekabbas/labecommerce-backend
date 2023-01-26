@@ -1,11 +1,8 @@
-import { users, products, purchases } from "./database";
-import { TUser, TProduct, TPurchase } from "./types";
-import { CATEGORIES } from "./types";
+import { CATEGORIES, TProduct, TPurchase, TUser } from "./types";
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { db } from "./database/knex";
-import { send } from "process";
 
 const app = express();
 app.use(express.json());
@@ -22,7 +19,7 @@ app.get('/ping', (req: Request, res: Response) => {
 //Get All Users - REFATORADO p/ query builder
 app.get("/users", async (req: Request, res: Response) => {
     try {
-        const result = await db("users")
+        const result = await db("users") as string
 
         res.status(200).send(result)
 
@@ -43,7 +40,7 @@ app.get("/users", async (req: Request, res: Response) => {
 //Get All Products - REFATORADO p/ query builder
 app.get('/products', async (req: Request, res: Response) => {
     try {
-        const result = await db("products")
+        const result = await db("products") as string
         res.status(200).send(result)
     } catch (error: any) {
         console.log(error)
@@ -69,7 +66,6 @@ app.get("/product/search", async (req: Request, res: Response) => {
         if(!result){
         res.status(400)
         throw new Error("Produto inexistente");
-        
         }
 
         if (name !== undefined) {
@@ -98,7 +94,7 @@ app.get("/product/search", async (req: Request, res: Response) => {
 //Create User - REFATORADO c/ query builder
 app.post("/users", async (req: Request, res: Response) => {
     try {
-        const { id, name, email, password } = req.body
+        const { id, name, email, password } = req.body as TUser
 
         if (
             typeof id !== 'string' ||
@@ -152,7 +148,7 @@ app.post("/users", async (req: Request, res: Response) => {
 //Create Product - REFATORADO c/ query builder
 app.post("/products", async (req: Request, res: Response) => {
     try {
-        const { id, name, price, description, category, image_url} = req.body
+        const { id, name, price, description, category, image_url} = req.body as TProduct
 
         if (
             typeof id !== 'string' || 
@@ -218,10 +214,10 @@ app.post("/products", async (req: Request, res: Response) => {
     }
 })
 
-//Create Purchase - INCOMPLETO, falta validação de erro se o id informado é cadastrado ou não.
+//Create Purchase - INCOMPLETO, falta validação do total_price.
 app.post("/purchases", async (req: Request, res: Response) => {
     try {
-        const { id, buyer_id, total_price, paid } = req.body
+        const { id, buyer_id, total_price } = req.body
 
         if (
             typeof id !== "string" ||
@@ -230,29 +226,23 @@ app.post("/purchases", async (req: Request, res: Response) => {
             throw new Error("O dado inserido deve ser uma string")
         }
         
-        if (typeof total_price !== "number" ||
-            typeof paid !== "number") {
-            res.status(400)
-            throw new Error("O dado inserido deve ser um número")
-        }
-        
-        const [userId] = await db.raw(`
-            SELECT * FROM users
-            WHERE id = ${buyer_id};
-        `)
+        const [userId] = await db("users").where({id: buyer_id})
 
-        if (userId) {
-            await db.raw(`
-            INSERT INTO purchases (id, buyer_id, total_price, paid)
-            VALUES ("${id}","${buyer_id}","${total_price}","${paid}")
-        ;`)
-            
-        } else {
+        if (!userId) {
             res.status(400)
-            throw new Error("Usuário não cadastrado, 'id' não encontrada")
+            throw new Error("Usuário não cadastrado, 'id' não encontrada")  
+        } 
+
+        const newPurchase ={
+            id,
+            buyer_id,
+            total_price
         }
-        
-        res.status(201).send("Compra realizada com sucesso")
+        await db("purchases").update(newPurchase).where({id})
+        res.status(201).send({
+            message: "Compra realizada com sucesso",
+            purchase: newPurchase
+        })
 
     } catch (error: any) {
         console.log(error)
@@ -383,10 +373,10 @@ app.put("/user/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const newId = req.body.id
-        const newName = req.body.name
-        const newEmail = req.body.email
-        const newPassword = req.body.password
+        const newId = req.body.id as string | undefined
+        const newName = req.body.name as string | undefined
+        const newEmail = req.body.email as string | undefined
+        const newPassword = req.body.password as string | undefined
 
         if (newId !== undefined) {
             if (typeof newId !== 'string') {
@@ -449,12 +439,12 @@ app.put("/product/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const newId = req.body.id 
-        const newName = req.body.name 
-        const newPrice = req.body.price
-        const newDescription = req.body.description
-        const newCategory = req.body.category 
-        const newImage = req.body.image_url
+        const newId = req.body.id as string | undefined
+        const newName = req.body.name as string | undefined
+        const newPrice = req.body.price as number | undefined
+        const newDescription = req.body.description as string | undefined
+        const newCategory = req.body.category as CATEGORIES | undefined
+        const newImage = req.body.image_url as string | undefined
 
         if (newId !== undefined) {
             if (typeof newId !== 'string') {
@@ -503,7 +493,7 @@ app.put("/product/:id", async (req: Request, res: Response) => {
             res.status(404)
             throw new Error("Produto não cadastrado")
         } else {
-            const updateProduct = {
+            const updateProduct: TProduct = {
                 id: newId || product.id,
                 name: newName || product.name,
                 price: isNaN(newPrice) ? product.price : newPrice,
