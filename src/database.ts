@@ -25,30 +25,32 @@ export const products: TProduct[] = [
         name: "Ventilador",
         price: 120,
         description: 'Ventilador 127V',
-        category: CATEGORIES.ELETROPORTATEIS
+        category: CATEGORIES.ELETROPORTATEIS,
+        image_url: "https://picsum.photos/200"
     },
     {
         id: "426",
         name: "Mesa",
         price: 480,
         description: 'Mesa de escritório branca',
-        category: CATEGORIES.MOVEIS
+        category: CATEGORIES.MOVEIS,
+        image_url: "https://picsum.photos/200"
     }
 
 ]
 
 export const purchases: TPurchase[] = [
     {
-        userId: "01",
-        productId: "201",
-        quantity: 1,
-        totalPrice: 120
+        id: "01",
+        buyer_id: "b001",
+        total_price: 400,
+        paid: 0
     },
     {
-        userId: "02",
-        productId: "426",
-        quantity: 1,
-        totalPrice: 480
+        id: "02",
+        buyer_id: "b002",
+        total_price: 120,
+        paid: 0
     }
 
 ]
@@ -68,13 +70,14 @@ export function getAllUsers():TUser[] {
     return users
 }
 
-export function createProduct(id: string, name: string, price: number, description: string, category: CATEGORIES):void {
+export function createProduct(id: string, name: string, price: number, description: string, category: CATEGORIES, image_url: string):void {
     const newProduct: TProduct = {
-        id: id,
-        name: name,
-        price: price,
-        description: description,
-        category: category
+        id,
+        name,
+        price,
+        description,
+        category,
+        image_url
     }
     products.push(newProduct)
     console.log("Produto criado com sucesso")
@@ -97,12 +100,12 @@ export function queryProductsByName(q: string): void {
     console.table(query)
 }
 
-export function createPurchase(userId: string, productId: string, quantity: number, totalPrice: number): void {
+export function createPurchase(id: string, buyer_id: string, total_price: number, paid: number): void {
     const newPurchase: TPurchase = {
-        userId: userId,
-        productId: productId,
-        quantity: quantity,
-        totalPrice: totalPrice
+        id,
+        buyer_id,
+        total_price,
+        paid
     }
     purchases.push(newPurchase)
     console.log("Compra realizada com sucesso")
@@ -111,7 +114,7 @@ export function createPurchase(userId: string, productId: string, quantity: numb
 
 export function getAllPurchasesFromUserId(userIdToSearch: string) {
     return purchases.filter((purchase)=>{
-        return purchase.userId.toLowerCase().includes(userIdToSearch.toLowerCase())
+        return purchase.buyer_id.toLowerCase().includes(userIdToSearch.toLowerCase())
     })
     
 }

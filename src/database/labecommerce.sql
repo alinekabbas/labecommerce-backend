@@ -23,15 +23,6 @@ SELECT * FROM users;
 INSERT INTO users(id, name, email, password)
 VALUES ('04', 'Chiquinho', 'chiquinho@email.com', 'U852147');
 
--- Delete User by id
-DELETE FROM users WHERE id = '04';
-
--- Edit User by id
-UPDATE users SET email = 'fulaninho@email.com' WHERE id = '01';
-
--- Get All Users REFATORADO (retorna o resultado ordenado pela coluna email em ordem crescente)
-SELECT *FROM users ORDER BY email ASC;
-
 
 -- Products ----------------------------------------------------------
 CREATE TABLE products (
