@@ -192,7 +192,7 @@ app.get("/products", async (req: Request, res: Response) => {
 })
 
 //Get All Products funcionalidade 2 - ok
-app.get("/product/search", async (req: Request, res: Response) => {
+app.get("/products/search", async (req: Request, res: Response) => {
     try {
         const searchProduct = req.query.q as string
 
@@ -220,7 +220,7 @@ app.get("/product/search", async (req: Request, res: Response) => {
 })
 
 //Edit Product by id - ok
-app.put("/product/:id", async (req: Request, res: Response) => {
+app.put("/products/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
@@ -290,28 +290,42 @@ app.put("/product/:id", async (req: Request, res: Response) => {
 
 })  
 
-//Create Purchase - INCOMPLETO, falta validação do total_price.
+//Create Purchase - ok
 app.post("/purchases", async (req: Request, res: Response) => {
     try {
-        const { id, buyer, productId, quantity } = req.body
+        const { id, buyer_id, productId, quantity } = req.body
 
         const [products] = await db("products").where({id: productId})
 
-        if(!id || !buyer || !productId){
+        if(!id || !buyer_id || !productId){
             res.status(400)
             throw new Error("Adicione 'id' ou 'buyer_id'")
         }
 
         if (
             typeof id !== "string" &&
-            typeof buyer !== "string") {
+            typeof buyer_id !== "string") {
             res.status(400)
             throw new Error("O dado inserido deve ser uma string")
         }
+
+        const [idAlreadyExists] = await db("purchases").where({id})
+
+        if(idAlreadyExists){
+            res.status(400)
+            throw new Error("'id' referente a outra compra")
+        }
         
+        const [findUser] = await db("users").where({id: buyer_id})
+
+        if(!findUser){
+            res.status(400)
+            throw new Error("Insira um 'buyer_id' válido")
+        }
+
         const newPurchase ={
             id,
-            buyer,
+            buyer_id,
             total_price: products.price * quantity
         }
 
@@ -320,19 +334,31 @@ app.post("/purchases", async (req: Request, res: Response) => {
             product_id: productId,
             quantity
         }
-        const [findUser] = await db("users").where({id: newPurchase.buyer})
 
-        if(findUser){
-            await db("purchases").insert(newPurchase)
-            await db("purchases_products").insert(newPurchaseProduct)
-        } else {
-            res.status(400)
-            throw new Error("Compra não realizada")
+        await db("purchases").insert(newPurchase)
+        await db("purchases_products").insert(newPurchaseProduct)
+        const [purchaseTotal] = await db("purchases_products").select(
+                "products.id",
+                "products.name",
+                "products.price",
+                "products.description",
+                "products.image_url",
+                "purchases_products.quantity"
+            ).innerJoin(
+                "products",
+                "purchases_products.product_id",
+                "=",
+                "products.id"
+            ).where({purchase_id: id})
+
+        const result = {
+            ... newPurchase,
+            products: [purchaseTotal]
         }
 
         res.status(201).send({
-            message: "Compra realizada com sucesso",
-            purchase: {newPurchase}  
+            message: "Pedido realizado com sucesso",
+            result 
         })
 
     } catch (error: any) {
@@ -345,47 +371,22 @@ app.post("/purchases", async (req: Request, res: Response) => {
     }
 })
 
-//Delete User by id - REFATORADO c/ query builder
-app.delete("/user/:id", async (req: Request, res: Response) => {
+//Delete Purchase by id - ok
+app.delete("/purchases/:id", async (req: Request, res: Response) => {
     try {
         const id = req.params.id
 
-        const [idUser] = await db("users").where({id: id})
+        const [idPurchase]: TPurchase[] | undefined[] = await db("purchases").where({id: id})
 
-        if (!idUser) {
+        if (!idPurchase) {
             res.status(404)
-            throw new Error("Usuário não cadastrado")
+            throw new Error("Pedido não localizado")
         }
 
-        await db("users").del().where({id: id})
+        await db("purchases_products").del().where({purchase_id: id})
+        await db("purchases").del().where({id: id})
 
-        res.status(200).send("Usuário excluído com sucesso")
-        
-    } catch (error: any) {
-        console.log(error)
-
-        if (res.statusCode === 200) {
-            res.status(500)
-        }
-        res.send(error.message)
-    }
-
-})
-
-//Delete Product by id - REFATORADO c/ query builder
-app.delete("/product/:id", async (req: Request, res: Response) => {
-    try {
-        const id = req.params.id
-
-        const [idProduct] = await db("products").where({id: id})
-
-        if (!idProduct) {
-            throw new Error("Produto não cadastrado")
-        }
-
-        await db("products").del().where({id: id})
-
-        res.status(200).send("Produto excluído com sucesso")
+        res.status(200).send("Pedido cancelado com sucesso")
         
     } catch (error: any) {
         console.log(error)
@@ -405,18 +406,18 @@ app.get("/purchases/:id", async (req: Request, res: Response)=>{
         const [idPurchase] = await db("purchases").where({id: id})
 
         if(!idPurchase){
-            res.status(400)
-            throw new Error("Compra não localizada")
+            res.status(404)
+            throw new Error("Pedido não localizado")
         } 
         
         const [purchase] = await db("purchases").select(
             "purchases.id AS purchaseId",
+            "users.id AS buyerId",
+            "users.name AS buyerName",
+            "users.email AS buyerEmail",
             "purchases.total_price AS totalPrice",
             "purchases.created_at AS createdAt",
-            "purchases.paid AS isPaid",
-            "users.id AS buyerId",
-            "users.email AS email",
-            "users.name AS name"
+            "purchases.paid"            
         ).innerJoin(
             "users",
             "purchases.buyer_id",
@@ -429,7 +430,7 @@ app.get("/purchases/:id", async (req: Request, res: Response)=>{
             "products.name",
             "products.price",
             "products.description",
-            "products.image_url",
+            "products.image_url AS imageUrl",
             "purchases_products.quantity"
         ).innerJoin(
             "products",
@@ -438,8 +439,7 @@ app.get("/purchases/:id", async (req: Request, res: Response)=>{
             "products.id"
         ).where({purchase_id: id})
 
-
-        const result = {...purchase, isPaid: purchase.isPaid === 0? false: true, productList: purchaseTotal}
+        const result = {...purchase, products: purchaseTotal}
         
         res.status(200).send(result)
         
@@ -457,4 +457,3 @@ app.get("/purchases/:id", async (req: Request, res: Response)=>{
         }
     }
 })
-

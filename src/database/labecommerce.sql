@@ -16,13 +16,7 @@ VALUES
     ('03', 'Beltrano', 'beltrano@email.com', "V963852")
 ;
 
--- Get All Users
 SELECT * FROM users;
-
--- Create User
-INSERT INTO users(id, name, email, password)
-VALUES ('04', 'Chiquinho', 'chiquinho@email.com', 'U852147');
-
 
 -- Products ----------------------------------------------------------
 CREATE TABLE products (
@@ -45,18 +39,7 @@ VALUES
     ('p05', 'geladeira', 3489, 'Geladeira 420L Branca', 'https://picsum.photos/200')
 ;
 
--- Create Product
-INSERT INTO products(id, name, price, description, category, image_url)
-VALUES ('p06', 'ar-condicionado', 1459.99, 'Ar-condicionado Split 12.000 BTUs', 'ventilação', 'https://picsum.photos/200'); 
-
--- Get All Products 1
 SELECT * FROM products;
-
--- Get All Products 2
-SELECT * FROM products WHERE name = "ventilador";
-
--- Edit Product by id
-UPDATE products SET price = 129.99 WHERE id = 'p01';
 
 -- Purchases ----------------------------------------------------------
 CREATE TABLE purchases(
@@ -80,35 +63,6 @@ VALUES
 
 SELECT * FROM purchases;
 
-SELECT * FROM purchases
-WHERE buyer_id = '01';
-
-UPDATE purchases 
-SET delivered_at = DATETIME ('NOW')
-WHERE buyer_id = '01';
-
-UPDATE purchases 
-SET delivered_at = DATETIME ('NOW')
-WHERE buyer_id = '02';
-
-SELECT * FROM purchases
-INNER JOIN users
-ON purchases.buyer_id = users.id
-WHERE buyer_id = '02';
-
-SELECT 
-    purchases.id AS purchaseId,
-    purchases.total_price AS totalPrice,
-    purchases.created_at AS createdAt,
-    purchases.paid AS isPaid,
-    users.id AS buyerId,
-    users.email AS email,
-    users.name AS name
-FROM purchases
-INNER JOIN users
-ON purchases.buyer_id = users.id
-WHERE purchases.id = 'b002';
-
 -- purchase_products ----------------------------------------------
 CREATE TABLE purchases_products(
     purchase_id TEXT NOT NULL,
@@ -128,18 +82,5 @@ VALUES
 
 SELECT * FROM purchases_products;
 
-SELECT
-    purchases.id AS purchaseId,
-    products.id AS productId,
-    products.name AS productName,
-    products.category AS productCategory,
-    purchases_products.quantity AS quantity,
-    products.price AS productPrice,
-    purchases.total_price AS totalPrice
-FROM purchases_products
-INNER JOIN purchases
-ON purchases_products.purchase_id = purchases.id
-INNER JOIN products
-ON purchases_products.product_id = products.id;
 
 
