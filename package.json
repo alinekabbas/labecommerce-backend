@@ -1,7 +1,7 @@
 {
-  "name": "labecommerce-backend",
+  "name": "labecommerce",
   "version": "1.0.0",
-  "description": "labecommerce-backend",
+  "description": "labecommerce",
   "main": "index.js",
   "scripts": {
     "start": "clear && tsc && node ./build/index.js",

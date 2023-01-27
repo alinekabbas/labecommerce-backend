@@ -1,11 +1,39 @@
-# labecommerce-backend
+# Labecommerce 
 
-API desenvolvida para o Projeto Labecommerce.
+Primeiro projeto de back-end onde foi desenvolvida a API Labecommerce.
 
-Esta API gerencia um banco de dados e permite cadastrar, editar, consultar e deletar usuários e produtos.
+Esta API está vinculada a um banco de dados de um e-commerce e permite:
 
-[API Labecommerce](https://documenter.getpostman.com/view/24460902/2s8ZDU64ZF)
+- 👥 Para usuários:
+    - [x] Cadastrar
+    - [x] Consultar a listagem total 
 
-## 💻 Layout
+- 🛍️ Para produtos:
+    - [x] Cadastrar
+    - [x] Editar por id
+    - [x] Consultar listagem total ou pesquisar pelo nome
 
-![API](./src/assets/labecommerce-image.png)
+- 🛒 Para pedidos de compras:
+    - [x] Cadastrar
+    - [x] Deletar por id
+    - [x] Consultar por id
+
+➡️ Acesse neste link a documentação da [API Labecommerce](https://documenter.getpostman.com/view/24460902/2s8ZDU64ZF)
+
+## Banco de Dados
+
+![BD](./src/assets/diagrama-bd.png)
+
+## Conteúdos abordados
+
+- NodeJS
+- Typescript
+- Express
+- SQL e SQLite
+- Knex
+- Postman
+
+## 📧 Meu Contato
+
+<a href="https://www.linkedin.com/in/aline-kabbas/" target="_blank"><img src="https://img.shields.io/badge/-LinkedIn-%230077B5?style=for-the-badge&logo=linkedin&logoColor=white" target="_blank"></a>
+<a href = "mailto:alinekabbas@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" target="_blank"></a>
