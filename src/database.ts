@@ -1,7 +1,6 @@
 import { TUser } from "./types"
 import { TProduct } from "./types"
 import { TPurchase } from "./types"
-import { CATEGORIES } from "./types"
 
 export const users: TUser[] = [
     {
@@ -16,7 +15,6 @@ export const users: TUser[] = [
         email: 'ciclano@gmail.com',
         password: '654321'
     }
-
 ]
 
 export const products: TProduct[] = [
@@ -25,7 +23,6 @@ export const products: TProduct[] = [
         name: "Ventilador",
         price: 120,
         description: 'Ventilador 127V',
-        category: CATEGORIES.ELETROPORTATEIS,
         image_url: "https://picsum.photos/200"
     },
     {
@@ -33,7 +30,6 @@ export const products: TProduct[] = [
         name: "Mesa",
         price: 480,
         description: 'Mesa de escritório branca',
-        category: CATEGORIES.MOVEIS,
         image_url: "https://picsum.photos/200"
     }
 
@@ -70,13 +66,12 @@ export function getAllUsers():TUser[] {
     return users
 }
 
-export function createProduct(id: string, name: string, price: number, description: string, category: CATEGORIES, image_url: string):void {
+export function createProduct(id: string, name: string, price: number, description: string, image_url: string):void {
     const newProduct: TProduct = {
         id,
         name,
         price,
         description,
-        category,
         image_url
     }
     products.push(newProduct)

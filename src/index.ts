@@ -226,7 +226,7 @@ app.put("/products/:id", async (req: Request, res: Response) => {
 
         const newId = req.body.id 
         const newName = req.body.name 
-        const newPrice = req.body.price 
+        const newPrice = req.body.price
         const newDescription = req.body.description 
         const newImage = req.body.image_url 
 
