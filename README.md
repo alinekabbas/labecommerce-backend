@@ -18,7 +18,7 @@ Esta API está vinculada a um banco de dados de um e-commerce e permite:
     - [x] Deletar por id
     - [x] Consultar por id
 
-➡️ Acesse neste link a documentação da [API Labecommerce](https://documenter.getpostman.com/view/24460902/2s8ZDU64ZF)
+🔴 Acesse [aqui](https://documenter.getpostman.com/view/24460902/2s8ZDU64ZF) a documentação da API Labecommerce.
 
 ## Banco de Dados
 
